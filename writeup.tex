@@ -1,0 +1,74 @@
+\documentclass[answers]{exam}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage[11pt]{extsizes}
+\extrawidth{2in}
+\extraheadheight{-1.2in}
+\usepackage{xcolor,graphicx}
+\usepackage[shortlabels]{enumitem}
+
+
+\begin{document}
+
+\noindent Brian Lin \\
+May 3, 2023 \\
+Stuart Shieber \\
+Computer Science 51 Write up \\
+
+\section{Introduction}
+In my final project, I extended MiniML to include lexically scoped environment semantics ($eval_l$), as well as additional operators such as Divide ($/$), GreaterThan ($>$), And ( $\&\&$ ), and Or ( $||$ ). 
+
+
+\section{Lexically Scoped Environment - eval$\_$l}
+
+Referencing the dynamically scoped environment (eval\_d), I implemented the Lexically scoped environment to return closures containing the function and the environment when a function was evaluated. Furthermore, I only needed to change the functions for Function (Fun), Letrec, and Functional Application (App) expressions to account for Closures for my lexical environment. Because everything else in my eval$\_$d and eval$\_$l are the same, I made a general helper function, called eval, that takes in the existing function and environment inputs, then added an additional bool input (I called this “lexical”) and used it in the unique expressions (Fun, Letrec, and App) to determine whether it was lexical. If it was, then, it would evaluate the function expressions that were unique to eval$\_$l and if not, then it would evaluate the function expressions that were unique to eval$\_$d. So, everytime I called the helper function on itself, I would have to add the additional input “lexical” since eval takes in three inputs. Here, I followed the Edict of Redundancy, which is to “Never write the same code twice” and it is significant to improving the readability, design, style, scalability, re-usability, and maintainability of my code. To ensure accuracy and correctness of the lexical and dynamic environments, I tested the functions in my  parser. 
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=7in]{figure1.JPG}
+	\caption{Figure 1: An expression evaluated using the Dynamically Scoped Environment. This DOES NOT accord with OCaml’s evaluation. }
+	\label{kalman}
+\end{figure}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=7in]{figure2.JPG}
+	\caption{An expression evaluated using the Lexically Scoped Environment. This DOES accord to OCaml’s evaluation.}
+	\label{kalman}
+\end{figure}
+
+In eval$\_$l, the Fun, Letrec, and App cases returns a closure Env.Closure that contains both the function and the environment at the time of function creation. This closure captures the lexical environment and allows the function body to be evaluated in the captured environment when the function is applied later. In Figure 2, we see that 
+x in “let x = 1” is created/defined so when we evaluate the function f 3, we get 1 + 3 = 4. On the other hand, in eval$\_$d, the cases simply returns the function itself without capturing the environment, i.e., the environment when the function is applied. In Figure 1, we see that the output is 5. This is because the environment at the time of function application is when x = 2. Therefore, when we call f 3 we get 2 + 3 = 5. By incorporating these differences, eval$\_$l enables lexical scoping and ensures that the function body is evaluated in the correct lexical environment. 
+
+
+\section{Additional Atomic Types and Operators}
+The given implementation of binop in the expr.ml file is missing a few operators so I added the Divide ( / ), GreaterThan ( > ), And ( $\&\&$ ), and Or ( | | ) operators. I added these operators into my expr.ml file within the binop algebraic data type, the Binop case within my exp$\_$to$\_$concrete$\_$string function, and the binop$\_$to$\_$string inner function within my exp$\_$to$\_$abstract$\_$string function. Additionally, I also added it to my parser (miniml$\_$parse.mly and miniml$\_$lex.mll) files. For the miniml$\_$parse.mly file, I added the operators as a part of the same categories as $\%$token and $\%$left. For instance, I added GREATERTHAN along with LESSTHAN and EQUALS and grouped AND and OR into its own  $\%$token and $\%$left category. Additionally, I the operators as a part of expnoapp by using the same structure as the other expressions, and replacing the first input of Binop with the added Operator. On top of that, I added the corresponding symbols for each operator within the sym$\_$table function:
+
+\begin{enumerate}[(1)]
+    \item "/" for Divide
+    \item ">" for GreaterThan
+    \item "$\&\&$" for And 
+    \item "||" for Or
+\end{enumerate}
+
+\noindent Lastly, I added the other operators in my evaluation.ml file to the helper functions (binopeval and unopeval) implemented in from Lab 9 — shown in Figure 3. 
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=7in]{figure3.JPG}
+	\caption{Additional operator cases added to binopeval. The And and Or cases uses the Bool expression to account for the binary inputs, x1 and x2. }
+	\label{kalman}
+\end{figure}
+
+\noindent To ensure the accuracy and correctness of these newly added operators, I tested various expressions in my parser using the lexical environment. 
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=7in]{figure4.JPG}
+	\caption{Expressions conjoined with Divide, GreaterThan, And, and Or operators.}
+	\label{kalman}
+\end{figure}
+
+\end{document}
